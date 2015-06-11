@@ -60,7 +60,7 @@ aggregated <- aggregate(Emissions ~ year + type,data=data,FUN=sum)
 # Print to screen
 g <- ggplot(aggregated, aes(year, Emissions, color = type)) + geom_line() + geom_point()
 g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for Baltimore by type")
-g <- g + theme_bw() 
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
 print(g)
 
 # Print to png
@@ -92,7 +92,7 @@ aggregated <- aggregate(Emissions ~ year,data=merged,FUN=sum)
 # Print to screen
 g <- ggplot(aggregated, aes(year, Emissions)) + geom_area() + geom_point()
 g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for coal combustion in Total US")
-g <- g + theme_bw() 
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
 print(g)
 
 # Print to png
@@ -124,8 +124,8 @@ aggregated <- aggregate(Emissions ~ year,data=merged,FUN=sum)
 
 # Print to screen
 g <- ggplot(aggregated, aes(year, Emissions)) + geom_area() + geom_point()
-g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for motor vehicles in Baltimor")
-g <- g + theme_bw() 
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for motor vehicles in Baltimore")
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
 print(g)
 
 # Print to png
@@ -134,3 +134,32 @@ ggsave("plot5.png")
 ## PLOT6
 ## Question: Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
 ## Plotting system: any
+
+# Libraries
+library(ggplot2)
+library(dplyr)
+
+# Load data
+if(!exists("NEI")) NEI <- readRDS("summarySCC_PM25.rds") # slowwww
+if(!exists("SCC")) SCC <- readRDS("Source_Classification_Code.rds")
+
+# Select only Baltimore
+NEI_BaltimoreLA <- NEI[NEI$fips %in% c("24510","06037"),]
+
+# For speed, first select only Vehicle-related sources in SSC then perform join/merge
+veh_related_rows <- grepl("Vehicles", SCC$EI.Sector, ignore.case=TRUE)
+SCC_veh <- SCC[veh_related_rows,]
+rm(veh_related_rows)
+merged <- merge(NEI_BaltimoreLA,SCC_veh[,c("SCC","Short.Name")],by="SCC",all = FALSE)
+
+# Sum up by year
+aggregated <- aggregate(Emissions ~ year + fips,data=merged,FUN=sum)
+
+# Print to screen
+g <- ggplot(aggregated, aes(year, Emissions,color = fips)) + geom_line() + geom_point()
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for motor vehicles in Baltimore (24510) and LA (06037)")
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
+print(g)
+
+# Print to png
+ggsave("plot6.png")
