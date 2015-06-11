@@ -33,13 +33,13 @@ data <- NEI[NEI$fips == "24510",]
 aggregated <- aggregate(Emissions ~ year,data=data,FUN=sum)
 
 # Print to screen
-barplot(height=aggregated$Emissions/10^6,names.arg=aggregated$year,
-        xlab="year",ylab="Total PM2.5 Emissions (M Tons)",main="PM2.5 Emissions (M Tons) for Baltimore City")
+barplot(height=aggregated$Emissions/10^3,names.arg=aggregated$year,
+        xlab="year",ylab="Total PM2.5 Emissions (k Tons)",main="PM2.5 Emissions (k Tons) for Baltimore City")
 
 # Print to png
 png("plot2.png", height=480, width=480)
-barplot(height=aggregated$Emissions/10^6,names.arg=aggregated$year,
-        xlab="year",ylab="Total PM2.5 Emissions (M Tons)",main="PM2.5 Emissions (M Tons) for Baltimore City")
+barplot(height=aggregated$Emissions/10^3,names.arg=aggregated$year,
+        xlab="year",ylab="Total PM2.5 Emissions (k Tons)",main="PM2.5 Emissions (k Tons) for Baltimore City")
 dev.off()
 
 ## PLOT3
@@ -64,7 +64,13 @@ g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
 print(g)
 
 # Print to png
-ggsave("plot3.png")
+png("plot3.png", height=480, width=480)
+g <- ggplot(aggregated, aes(year, Emissions, color = type)) + geom_line() + geom_point()
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for Baltimore by type")
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
+print(g)
+dev.off()
+
 
 ## PLOT4
 ## Question: Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?
@@ -96,7 +102,12 @@ g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
 print(g)
 
 # Print to png
-ggsave("plot4.png")
+png("plot4.png", height=480, width=480)
+g <- ggplot(aggregated, aes(year, Emissions)) + geom_area() + geom_point()
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for coal combustion in Total US")
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
+print(g)
+dev.off()
 
 ## PLOT5
 ## Question: How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City?
@@ -129,7 +140,12 @@ g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
 print(g)
 
 # Print to png
-ggsave("plot5.png")
+png("plot5.png", height=480, width=480)
+g <- ggplot(aggregated, aes(year, Emissions)) + geom_area() + geom_point()
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for motor vehicles in Baltimore")
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
+print(g)
+dev.off()
 
 ## PLOT6
 ## Question: Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
@@ -162,4 +178,9 @@ g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
 print(g)
 
 # Print to png
-ggsave("plot6.png")
+png("plot6.png", height=480, width=480)
+g <- ggplot(aggregated, aes(year, Emissions,color = fips)) + geom_line() + geom_point()
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for motor vehicles in Baltimore (24510) and LA (06037)")
+g <- g + theme_bw() + scale_x_continuous(breaks = seq(1999,2008,3))
+print(g)
+dev.off()
