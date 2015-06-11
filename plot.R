@@ -59,21 +59,44 @@ aggregated <- aggregate(Emissions ~ year + type,data=data,FUN=sum)
 
 # Print to screen
 g <- ggplot(aggregated, aes(year, Emissions, color = type)) + geom_line() + geom_point()
-g <- g + labs(x="year",y="Total PM2.5 Emissions (M Tons)",title="PM2.5 Emissions (M Tons) for Baltimore by type")
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for Baltimore by type")
 g <- g + theme_bw() 
 print(g)
 
 # Print to png
-png("plot3.png", height=480, width=480)
-g <- ggplot(aggregated, aes(year, Emissions, color = type)) + geom_line() + geom_point()
-g <- g + labs(x="year",y="Total PM2.5 Emissions (M Tons)",title="PM2.5 Emissions (M Tons) for Baltimore by type")
-g <- g + theme_bw() 
-print(g)
-dev.off()
+ggsave("plot3.png")
 
 ## PLOT4
 ## Question: Across the United States, how have emissions from coal combustion-related sources changed from 1999-2008?
 ## Plotting system: any
+
+# Libraries
+library(ggplot2)
+library(dplyr)
+
+# Load data
+if(!exists("NEI")) NEI <- readRDS("summarySCC_PM25.rds") # slowwww
+if(!exists("SCC")) SCC <- readRDS("Source_Classification_Code.rds")
+
+# For speed, first select only coal combustion-related sources in SSC then perform join/merge
+coal_related_rows <- grepl("Coal", SCC$Short.Name, ignore.case=TRUE)
+SCC_coal <- SCC[coal_related_rows,]
+comb_related_rows <- grepl("Comb", SCC$Short.Name, ignore.case=TRUE)
+SCC_coal <- SCC[comb_related_rows,]
+rm(coal_related_rows,comb_related_rows)
+merged <- merge(NEI,SCC_coal[,c("SCC","Short.Name")],by="SCC",all = FALSE)
+
+# Sum up by year
+aggregated <- aggregate(Emissions ~ year,data=merged,FUN=sum)
+
+# Print to screen
+g <- ggplot(aggregated, aes(year, Emissions)) + geom_area() + geom_point()
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for coal combustion in Total US")
+g <- g + theme_bw() 
+print(g)
+
+# Print to png
+ggsave("plot4.png")
 
 ## PLOT5
 ## Question: How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City?
