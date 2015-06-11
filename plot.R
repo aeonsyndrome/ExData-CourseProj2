@@ -102,6 +102,35 @@ ggsave("plot4.png")
 ## Question: How have emissions from motor vehicle sources changed from 1999-2008 in Baltimore City?
 ## Plotting system: any
 
+# Libraries
+library(ggplot2)
+library(dplyr)
+
+# Load data
+if(!exists("NEI")) NEI <- readRDS("summarySCC_PM25.rds") # slowwww
+if(!exists("SCC")) SCC <- readRDS("Source_Classification_Code.rds")
+
+# Select only Baltimore
+NEI_Baltimore <- NEI[NEI$fips == "24510",]
+
+# For speed, first select only Vehicle-related sources in SSC then perform join/merge
+veh_related_rows <- grepl("Vehicles", SCC$EI.Sector, ignore.case=TRUE)
+SCC_veh <- SCC[veh_related_rows,]
+rm(veh_related_rows)
+merged <- merge(NEI_Baltimore,SCC_veh[,c("SCC","Short.Name")],by="SCC",all = FALSE)
+
+# Sum up by year
+aggregated <- aggregate(Emissions ~ year,data=merged,FUN=sum)
+
+# Print to screen
+g <- ggplot(aggregated, aes(year, Emissions)) + geom_area() + geom_point()
+g <- g + labs(x="year",y="Total PM2.5 Emissions (Tons)",title="PM2.5 Emissions for motor vehicles in Baltimor")
+g <- g + theme_bw() 
+print(g)
+
+# Print to png
+ggsave("plot5.png")
+
 ## PLOT6
 ## Question: Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
 ## Plotting system: any
